@@ -1,11 +1,6 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
 import streamlit as st
 import subprocess
+import sys
 
 st.title('Welcome to AI4Good.')
 
@@ -31,5 +26,6 @@ More of such datasets can be found [here](https://github.com/kharrigian/mental-h
 roller = st.button('Execute Model.')
 if roller:
     st.write('This might take a while.')
-    subprocess.check_output("python", "project.py")
+    subprocess.run([sys.executable, "-c", "project.py"], capture_output=True, text=True)
+    print(result.stdout)
 
