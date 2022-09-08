@@ -26,6 +26,6 @@ More of such datasets can be found [here](https://github.com/kharrigian/mental-h
 roller = st.button('Execute Model.')
 if roller:
     st.write('This might take a while.')
-    subprocess.run([sys.executable, "-c", "project.py"], capture_output=True, text=True)
+    result = subprocess.run([sys.executable, "-c", "project.py"], capture_output=True, text=True)
     print(result.stdout)
 
