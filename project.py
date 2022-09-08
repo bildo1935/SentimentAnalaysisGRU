@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[17]:
-
-
 import torch
 import torch.nn as nn
 import numpy as np
@@ -19,21 +13,9 @@ import random
 import subprocess
 
 
-# In[2]:
-
-
-#CUDA_LAUNCH_BLOCKING=1
 device = torch.device("cuda" if torch.cuda.is_available()==True else "cpu")
 
-
-# In[3]:
-
-
 nontest_df = pd.read_csv("training.csv")
-
-
-# In[4]:
-
 
 reddit = praw.Reddit(client_id='Z5wGLXCyVogiLcexFuLHsQ', 
                     client_secret='OHOSmhNxBrKaVRgsr2NP1daHJz0fJA',
@@ -81,8 +63,6 @@ df3['body'] = df3['title'] + df3['body']
 test_df = pd.DataFrame(df3['body'])
 test_df['label'] = np.NaN 
 
-
-# In[5]:
 
 
 df5 = pd.concat([nontest_df, test_df], ignore_index=True)
@@ -133,9 +113,6 @@ def collate_batch(batch):
     return text_list, label_list
 
 
-# In[6]:
-
-
 def train_val_test_split(train_size, val_size, test_size):
     train_data = total_data[:(train_size)]
     val_data = total_data[train_size:train_size+val_size]
@@ -147,9 +124,6 @@ train_data, val_data, test_data = train_val_test_split(1950, 450, 600)
 train_dataloader = DataLoader(train_data, batch_size=10, collate_fn=collate_batch, shuffle=False)
 val_dataloader = DataLoader(val_data, batch_size=10, collate_fn=collate_batch, shuffle=False)
 test_dataloader = DataLoader(test_data, batch_size=20, collate_fn=collate_batch, shuffle=False)
-
-
-# In[7]:
 
 
 class TextClassifier(nn.Module):
@@ -174,16 +148,10 @@ class TextClassifier(nn.Module):
         return y_out
 
 
-# In[11]:
-
-
 optimiser = torch.optim.SGD(TextClassifier(vocab_size=len(embedding_model.wv), num_classes=2, hidden_size=8, num_layers=1, batch_first=True, embedding_size=100).parameters(), lr=0.1, nesterov=True, momentum=0.9)
 loss_func = nn.HingeEmbeddingLoss()
 accuracy = torchmetrics.Accuracy(num_classes=1, threshold=0.5).to(device)
 scheduler = torch.optim.lr_scheduler.ExponentialLR(optimiser, gamma=0.9)
-
-
-# In[12]:
 
 
 #train
@@ -204,10 +172,6 @@ for epoch in range(epochs):
     scheduler.step()
     #print(loss, acc)
 
-
-# In[14]:
-
-
 #val
 
 epoch = 25
@@ -220,10 +184,6 @@ for epoch in range(epochs):
         loss = loss_func(y_pred, batch_labels.float())
         acc = accuracy(preds=y_pred, target=batch_labels.long())
     #print(loss, acc)
-
-
-# In[18]:
-
 
 #test
 
@@ -247,10 +207,3 @@ for epoch in range(epochs):
         batch_index += 1
 
 print(f"Flagged User: {random.choice(at_risk_users)}")
-
-
-# In[ ]:
-
-
-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
-
