@@ -1,8 +1,9 @@
 numpy == 1.21.5
+python == 3.7
 pandas == 1.4.2
-torch == 1.12.1
+torch == 1.2.1
 torchtext == 0.13.1
-torchmetrics == 0.9.3
+torchmetrics == 0.93
 gensim == 4.1.2
 nltk == 3.7
 praw == 7.6.0
