@@ -1,0 +1,11 @@
+name:dependency
+dependencies:
+- numpy
+- pandas
+- torch
+- torchtext
+- torchmetrics
+- praw
+- nltk
+- subprocess
+- gensim
