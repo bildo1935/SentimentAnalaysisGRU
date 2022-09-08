@@ -7,8 +7,7 @@ st.title('Welcome to AI4Good.')
 st.header('Introduction.')
 st.markdown(f'''
 Recent volatility and turbulence has caused a marked increase in distress of the Singaporean population. 
-It has been found that many who suffer from said mental distress attempt to find relief through (anonymous) participation  
-in online communities e.g. Reddit.
+It has been found that many who suffer from said mental distress attempt to find relief through (anonymous) participation in online communities e.g. Reddit.
 ''')
 
 st.header('How it works.')
@@ -21,6 +20,7 @@ Authors whose texts are classified as representing psychological instability are
 st.markdown(f'''The dataset used for training is a modified version of the training data used in  
 [On the State of Social Media Data for Mental Health Research](https://arxiv.org/abs/2011.05233).  
 More of such datasets can be found [here](https://github.com/kharrigian/mental-health-datasets).
+Code for the project can be found [here](https://github.com/bildo1935/SentimentAnalaysisGRU).
 ''')
 
 roller = st.button('Execute Model.')
