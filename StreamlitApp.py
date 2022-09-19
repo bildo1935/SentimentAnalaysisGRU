@@ -26,6 +26,6 @@ Code for the project can be found [here](https://github.com/bildo1935/SentimentA
 roller = st.button('Execute Model.')
 if roller:
     st.write('This might take a while.')
-    result = subprocess.run([sys.executable, "-c", "project.py"], capture_output=True, text=True)
+    result = subprocess.run([sys.executable, "-c", "Test.py"], capture_output=True, text=True)
     print(result.stdout)
 
