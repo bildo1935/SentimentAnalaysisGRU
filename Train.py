@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[5]:
+# In[1]:
 
 
 import torch
@@ -16,20 +16,20 @@ import torchtext
 import subprocess
 
 
-# In[6]:
+# In[2]:
 
 
 #CUDA_LAUNCH_BLOCKING=1
 device = torch.device("cuda" if torch.cuda.is_available()==True else "cpu")
 
 
-# In[7]:
+# In[3]:
 
 
 nontest_df = pd.read_csv("training.csv")
 
 
-# In[8]:
+# In[4]:
 
 
 texts = list(nontest_df['body'])
@@ -47,11 +47,9 @@ for i in range(len(texts)):
     texts[i] = tokens
 
 embedding_model = gensim.models.Word2Vec(sentences=texts, min_count=1, workers=5, window=3, sg=0, vector_size=100)
-embedding_modelwv = embedding_model.wv
-embedding_modelwv.save('vectors.kv')
-reloaded_word_vectors = gensim.models.KeyedVectors.load('vectors.kv')
-word2index = {token: token_index for token_index, token in enumerate(reloaded_word_vectors.index_to_key)}
-index2word = {index: token for token, index in enumerate(reloaded_word_vectors.key_to_index)} 
+embedding_model.save('w2v.model')
+word2index = {token: token_index for token_index, token in enumerate(embedding_model.wv.index_to_key)}
+index2word = {index: token for token, index in enumerate(embedding_model.wv.key_to_index)} 
         
 def text_preprocessing(text):
     # convert text to lowercase
@@ -77,7 +75,7 @@ def collate_batch(batch):
     return text_list, label_list
 
 
-# In[9]:
+# In[5]:
 
 
 def train_val_split(train_size, val_size):
@@ -91,7 +89,7 @@ train_dataloader = DataLoader(train_data, batch_size=10, collate_fn=collate_batc
 val_dataloader = DataLoader(val_data, batch_size=10, collate_fn=collate_batch, shuffle=False)
 
 
-# In[10]:
+# In[6]:
 
 
 class TextClassifier(nn.Module):
@@ -100,7 +98,7 @@ class TextClassifier(nn.Module):
         super(TextClassifier, self).__init__()
         self.RNN = nn.GRU(input_size=embedding_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=batch_first)
         self.fc = nn.Linear(in_features=hidden_size, out_features=1)
-        self.embedding = nn.Embedding.from_pretrained(torch.FloatTensor(reloaded_word_vectors.vectors), padding_idx=0)
+        self.embedding = nn.Embedding.from_pretrained(torch.FloatTensor(embedding_model.wv.vectors), padding_idx=0)
         
     def forward(self, x_in):
         x_in = self.embedding(x_in)
@@ -111,16 +109,16 @@ class TextClassifier(nn.Module):
         return y_out
 
 
-# In[11]:
+# In[13]:
 
 
 optimiser = torch.optim.SGD(TextClassifier(vocab_size=len(embedding_model.wv), num_classes=2, hidden_size=8, num_layers=1, batch_first=True, embedding_size=100).parameters(), lr=0.1, nesterov=True, momentum=0.9)
-loss_func = nn.HingeEmbeddingLoss()
+loss_func = nn.BCEWithLogitsLoss()
 accuracy = torchmetrics.Accuracy(num_classes=1, threshold=0.5).to(device)
 scheduler = torch.optim.lr_scheduler.ExponentialLR(optimiser, gamma=0.9)
 
 
-# In[12]:
+# In[14]:
 
 
 #train
@@ -142,7 +140,7 @@ for epoch in range(epochs):
     print(loss, acc)
 
 
-# In[10]:
+# In[16]:
 
 
 #val
@@ -154,6 +152,7 @@ for epoch in range(epochs):
         machine = TextClassifier(vocab_size=len(embedding_model.wv), num_classes=2, hidden_size=1, num_layers=1, batch_first=True, embedding_size=100)
         machine = machine.to(device)
         y_pred = machine(x_in=batch_text)
+        print(y_pred)
         loss = loss_func(y_pred, batch_labels.float())
         acc = accuracy(preds=y_pred, target=batch_labels.long())
     print(loss, acc)

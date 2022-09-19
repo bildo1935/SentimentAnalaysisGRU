@@ -17,14 +17,14 @@ import torchtext
 import random
 
 
-# In[2]:
+# In[3]:
 
 
 #CUDA_LAUNCH_BLOCKING=1
 device = torch.device("cuda" if torch.cuda.is_available()==True else "cpu")
 
 
-# In[3]:
+# In[2]:
 
 
 reddit = praw.Reddit(client_id='Z5wGLXCyVogiLcexFuLHsQ', 
@@ -92,10 +92,10 @@ for i in range(len(texts)):
     tokens = [stemmer.stem(token) for token in tokens]
     texts[i] = tokens
 
-embedding_model = gensim.models.Word2Vec(sentences=texts, min_count=1, workers=5, window=3, sg=0, vector_size=100)
-embedding_modelwv = embedding_model.wv
-word2index = {token: token_index for token_index, token in enumerate(embedding_modelwv.index_to_key)}
-index2word = {index: token for token, index in enumerate(embedding_modelwv.key_to_index)} 
+embedding_model = gensim.models.Word2Vec.load('w2v.model')
+embedding_model.build_vocab(texts, update=True)
+word2index = {token: token_index for token_index, token in enumerate(embedding_model.wv.index_to_key)}
+index2word = {index: token for token, index in enumerate(embedding_model.wv.key_to_index)} 
         
 def text_preprocessing(text):
     # convert text to lowercase
@@ -121,23 +121,42 @@ def collate_batch(batch):
     return text_list, label_list
 
 
-# In[5]:
+# In[6]:
 
 
 test_dataloader = DataLoader(total_data, batch_size=20, collate_fn=collate_batch, shuffle=False)
 
 
-# In[9]:
+# In[34]:
+
+
+class TextClassifier(nn.Module):
+    
+    def __init__(self, vocab_size, num_classes, hidden_size, num_layers, batch_first, embedding_size):
+        super(TextClassifier, self).__init__()
+        self.RNN = nn.GRU(input_size=embedding_size, hidden_size=hidden_size, num_layers=num_layers, batch_first=batch_first)
+        self.fc = nn.Linear(in_features=hidden_size, out_features=1)
+        self.embedding = nn.Embedding.from_pretrained(torch.FloatTensor(embedding_model.wv.vectors), padding_idx=0)
+        self.act = nn.Sigmoid()
+        
+    def forward(self, x_in):
+        x_in = self.embedding(x_in)
+        _, y_out = self.RNN(x_in)
+        y_out = self.fc(y_out)
+        y_out = torch.squeeze(y_out, dim=0)
+        y_out = y_out.view(20)
+        #softmax = torch.nn.Softmax(dim=1)
+        y_out = self.act(y_out)
+        return y_out
+
+
+# In[35]:
 
 
 machine = torch.load("trained_model.pt")
-optimiser = torch.optim.SGD(machine.parameters(), lr=0.1, nesterov=True, momentum=0.9)
-loss_func = nn.HingeEmbeddingLoss()
-accuracy = torchmetrics.Accuracy(num_classes=1, threshold=0.5).to(device)
-scheduler = torch.optim.lr_scheduler.ExponentialLR(optimiser, gamma=0.9)
 
 
-# In[12]:
+# In[36]:
 
 
 #test
@@ -152,13 +171,15 @@ for epoch in range(epochs):
         machine = TextClassifier(vocab_size=len(embedding_model.wv), num_classes=2, hidden_size=1, num_layers=1, batch_first=True, embedding_size=100)
         machine = machine.to(device)
         y_pred = machine(x_in=batch_text)
+        #activation = nn.Hardtanh(0, 1)
+        #y_pred = activation(y_pred)
         for i in range(len(y_pred)):
             if y_pred[i]>0.5:
                 y_pred[i] = 1
             else:
                 y_pred[i] = 0
             if y_pred[i] == 1:
-               at_risk_users.append(df3.iloc[(20*batch_index)+i]['author'])
+                at_risk_users.append(df3.iloc[(20*batch_index)+i]['author'])
         batch_index += 1
 
 print(f"Flagged User: {random.choice(at_risk_users)}")
