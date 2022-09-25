@@ -27,5 +27,5 @@ roller = st.button('Execute Model.')
 if roller:
     st.write('This might take a while.')
     result = subprocess.run([sys.executable, "-c", "Test.py"], capture_output=True, text=True)
-    print(result.stdout)
+    st.write('result.stdout')
 
