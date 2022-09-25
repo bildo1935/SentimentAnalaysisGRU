@@ -10,6 +10,9 @@ import gensim
 import praw
 import random
 
+#Initialize device
+device = torch.device("cpu")
+
 #Retrieve posts
 reddit = praw.Reddit(client_id='Z5wGLXCyVogiLcexFuLHsQ', 
                     client_secret='OHOSmhNxBrKaVRgsr2NP1daHJz0fJA',
