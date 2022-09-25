@@ -90,7 +90,7 @@ def text_preprocessing(text):
     # stemming tokens
     stemmer = nltk.SnowballStemmer('english')
     tokens = [stemmer.stem(token) for token in tokens]
-    tokens = [word2index['word'] for word in tokens]
+    tokens = [word2index[word] for word in tokens]
     return tokens
 
 def collate_batch(batch):
