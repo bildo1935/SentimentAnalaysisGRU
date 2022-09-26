@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[2]:
 
 
 import torch
@@ -12,24 +12,24 @@ import nltk
 from torch.utils.data import Dataset, DataLoader
 import gensim
 import torchmetrics
-import torchtext
 import subprocess
 
 
-# In[2]:
+# In[3]:
 
 
 #CUDA_LAUNCH_BLOCKING=1
 device = torch.device("cuda" if torch.cuda.is_available()==True else "cpu")
 
 
-# In[3]:
+# In[10]:
 
 
 nontest_df = pd.read_csv("training.csv")
+nontest_df = nontest_df.sample(frac=1).reset_index(drop=True)
 
 
-# In[4]:
+# In[11]:
 
 
 texts = list(nontest_df['body'])
@@ -59,7 +59,7 @@ def text_preprocessing(text):
     # stemming tokens
     stemmer = nltk.SnowballStemmer('english')
     tokens = [stemmer.stem(token) for token in tokens]
-    tokens = [word2index['word'] for word in tokens]
+    tokens = [word2index[word] for word in tokens]
     return tokens
 
 def collate_batch(batch):
@@ -75,7 +75,7 @@ def collate_batch(batch):
     return text_list, label_list
 
 
-# In[5]:
+# In[12]:
 
 
 def train_val_split(train_size, val_size):
@@ -89,7 +89,7 @@ train_dataloader = DataLoader(train_data, batch_size=10, collate_fn=collate_batc
 val_dataloader = DataLoader(val_data, batch_size=10, collate_fn=collate_batch, shuffle=False)
 
 
-# In[6]:
+# In[13]:
 
 
 class TextClassifier(nn.Module):
@@ -109,16 +109,16 @@ class TextClassifier(nn.Module):
         return y_out
 
 
-# In[13]:
+# In[17]:
 
 
 optimiser = torch.optim.SGD(TextClassifier(vocab_size=len(embedding_model.wv), num_classes=2, hidden_size=8, num_layers=1, batch_first=True, embedding_size=100).parameters(), lr=0.1, nesterov=True, momentum=0.9)
 loss_func = nn.BCEWithLogitsLoss()
 accuracy = torchmetrics.Accuracy(num_classes=1, threshold=0.5).to(device)
-scheduler = torch.optim.lr_scheduler.ExponentialLR(optimiser, gamma=0.9)
+#scheduler = torch.optim.lr_scheduler.ExponentialLR(optimiser, gamma=0.9)
 
 
-# In[14]:
+# In[19]:
 
 
 #train
@@ -136,11 +136,11 @@ for epoch in range(epochs):
         loss.backward()
         torch.nn.utils.clip_grad_norm_(TextClassifier(vocab_size=len(embedding_model.wv), num_classes=2, hidden_size=1, num_layers=1, batch_first=True, embedding_size=100).parameters(), max_norm=1.0, norm_type=2.0, error_if_nonfinite=False)
         optimiser.step()
-    scheduler.step()
+    print('check')
     print(loss, acc)
 
 
-# In[16]:
+# In[20]:
 
 
 #val
@@ -152,13 +152,12 @@ for epoch in range(epochs):
         machine = TextClassifier(vocab_size=len(embedding_model.wv), num_classes=2, hidden_size=1, num_layers=1, batch_first=True, embedding_size=100)
         machine = machine.to(device)
         y_pred = machine(x_in=batch_text)
-        print(y_pred)
         loss = loss_func(y_pred, batch_labels.float())
         acc = accuracy(preds=y_pred, target=batch_labels.long())
     print(loss, acc)
 
 
-# In[15]:
+# In[21]:
 
 
 torch.save(machine, "trained_model.pt")
