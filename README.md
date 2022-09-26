@@ -42,6 +42,7 @@ Training file can be found in `Train.py`.
 Testing file can be found in `Test.py`.
 
 ## Conversion to App
-1.  
 
-
+1.  Code found in `Test.py` is duplicated in `StreamlitApp.py`.
+3.  Username of a random flagged user is shown only when the 'Execute Model.' button is clicked.
+2.  Description of project is added via `st.write`.
