@@ -21,7 +21,7 @@ Simply access the app via https://nvg1356-sentimentanalaysisgru-streamlitapp-mhd
 4. Preprocessed text is split into training and validation sets.
 5. Training and validation sets are fed into **Pytorch Dataloader** to generate batches.
 6. **TextClassifier** class, which encompasses the **recurrent neural network with gated recurrent units**, is defined.
-7. **Stochastic Gradient Descent**, **Binary Cross Entropy Loss with Logits**, **Accuracy from Torchmetrics** and **Exponential Learning Rate Scheduler** are initialised as the optimisation algorithm, loss function, accuracy metric and learning rate adjuster respectively.
+7. **Stochastic Gradient Descent**, **Binary Cross Entropy Loss with Logits** and **Accuracy from Torchmetrics** are initialised as the optimisation algorithm, loss function and accuracy metric respectively.
 8. For each iteration, batches of training data are fed into the initialised model and the model parameters are adjusted according to the loss function every batch with the aim of decreasing the loss. 
 9. The trained model is tested on validation data. 
 10. The trained classification model is saved as **trained_model.pt**.
