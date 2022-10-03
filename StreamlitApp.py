@@ -41,7 +41,7 @@ More of such datasets can be found [here](https://github.com/kharrigian/mental-h
 
 roller = st.button('Execute Model.')
 if roller:
-    st.write(generate_user(run=True)
+    st.write(generate_user(run=True))
 
 def generate_user(run):
     if run:
